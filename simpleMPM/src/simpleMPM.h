@@ -30,7 +30,7 @@ struct Gridnode {
 };
 
 struct Particle {
-	double   m, V, V0;             // particle mass
+	double   m, V0, V;             // particle mass
 	Vector2d x, v, vgrid, agrid;          // particle position and velocities
 	Vector2d v_ipol, acc_ipol; // interpolated (from grid) new velocities and accelerations
 	Matrix2d L;
@@ -39,9 +39,9 @@ struct Particle {
 	Matrix2d SIG;              // stress tensor
 
 	Particle() { // initialize particle data to some default values
-		m = 0.0;
-		V = 0.0;
+		m  = 0.0;
 		V0 = 0.0;
+		V  = 0.0;
 		x.setZero();
 		v.setZero();
 		vgrid.setZero();

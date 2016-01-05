@@ -29,7 +29,7 @@ void settings() {
 	Np = npx * npy;
 
 	p_spacing = 1.0;
-	cellSize = 1.0 * p_spacing;
+	cellSize  = 1.0 * p_spacing;
 	icellSize = 1.0 / cellSize;
 
 	matProperties();
@@ -59,12 +59,12 @@ void createParticles() {
 		for (int i = 0; i < 10; i++) {
 
 			particles[p_index].x(0) = i * p_spacing + 0.5;
-			particles[p_index].x(1) = j * p_spacing + 1.5;
+			particles[p_index].x(1) = j * p_spacing + 3.5;
 			particles[p_index].v(0) = +0.80;
 			particles[p_index].v(1) = 0.00;
-			particles[p_index].m = 1.0;
 			particles[p_index].V = p_spacing * p_spacing;
 			particles[p_index].V0 = particles[p_index].V;
+			particles[p_index].m = rho * particles[p_index].V;
 
 			p_index++;
 		}
@@ -73,12 +73,12 @@ void createParticles() {
 	for (int j = 0; j < npy; j++) {
 		for (int i = 10; i < npx; i++) {
 			particles[p_index].x(0) = i * p_spacing + 4.5;
-			particles[p_index].x(1) = j * p_spacing + 1.5;
+			particles[p_index].x(1) = j * p_spacing + 3.5;
 			particles[p_index].v(0) = -0.80;
 			particles[p_index].v(1) = 0.00;
-			particles[p_index].m = 1.0;
 			particles[p_index].V = p_spacing * p_spacing;
 			particles[p_index].V0 = particles[p_index].V;
+			particles[p_index].m = rho * particles[p_index].V;
 
 			p_index++;
 		}
@@ -274,32 +274,33 @@ void updateStress() {
 
 		for (int p_index = 0; p_index < Np; p_index++) {
 
-			D = 0.5 * (particles[p_index].L + particles[p_index].L.transpose()); // stretch rate tensor
-			W = 0.5 * (particles[p_index].L - particles[p_index].L.transpose()); // spin    rate tensor
 
-			particles[p_index].F = (dt * particles[p_index].L + II) * particles[p_index].F;
 
+/*			particles[p_index].F = (dt * particles[p_index].L + II) * particles[p_index].F;
 			particles[p_index].EPS = 0.5 * (particles[p_index].F.transpose() * particles[p_index].F - II);
-
 			devE = Deviator(particles[p_index].EPS);
-
 			S = K * particles[p_index].EPS.trace() * II + 2.0 * G * devE; // PK2 stress
 			tau = particles[p_index].F * S * particles[p_index].F.transpose(); // convert PK2 to Kirchhoff stress
-			particles[p_index].SIG = tau / particles[p_index].F.determinant();
+			particles[p_index].SIG = tau / particles[p_index].F.determinant();*/
+			//particles[p_index].V = particles[p_index].V * (II + dt * particles[p_index].L).determinant();
 
-//			Matrix2d sigdot;
-//			sigdot = K * D.trace() * II + 2. * G * Deviator(D);
-//			particles[p_index].SIG += dt * sigdot;
-//
-//			particles[p_index].V +=  dt * D.trace() * particles[p_index].V;
+			//D = 0.5 * (particles[p_index].L + particles[p_index].L.transpose()); // stretch rate tensor
+			//particles[p_index].V += dt * D.trace() * particles[p_index].V;
 
-			/*
 
+
+
+			 D = 0.5 * (particles[p_index].L + particles[p_index].L.transpose()); // stretch rate tensor
+			 W = 0.5 * (particles[p_index].L - particles[p_index].L.transpose()); // spin    rate tensor
+			 Matrix2d sigdot;
+			 sigdot = K * D.trace() * II + 2. * G * Deviator(D);
+			 particles[p_index].SIG += dt * sigdot;
+			 particles[p_index].V +=  dt * D.trace() * particles[p_index].V;
 			 Vnew = particles[p_index].V * (II + dt * particles[p_index].L).determinant();
-
+			 particles[p_index].V   =  Vnew;
+/*
 			 pressure = K * (particles[p_index].V / Vnew - 1.0);
 
-			 particles[p_index].V   =  Vnew;
 
 			 devD = (D - (1.0/2.0) * D.trace() * II);
 
@@ -312,13 +313,14 @@ void updateStress() {
 			 particles[p_index].SIG  = K * particles[p_index].EPS.trace() * II + 2 * G * devE;
 			 particles[p_index].V = particles[p_index].V * (II + dt * particles[p_index].L).determinant();
 
+			 double d_iso = D.trace();
+			 Vnew = particles[p_index].V + dt * d_iso * particles[p_index].V;
+			 pressure = K * (particles[p_index].V0 / Vnew - 1.0);
+			 particles[p_index].SIG = -pressure * II;
 
-
-			double d_iso = D.trace();
-			Vnew = particles[p_index].V + dt * d_iso * particles[p_index].V;
-			pressure = K * (particles[p_index].V0 / Vnew - 1.0);
-			particles[p_index].SIG = -pressure * II;
 			*/
+
+//
 		}
 
 }
@@ -495,7 +497,7 @@ void dumpGrid() {
 			"ITEM: BOX BOUNDS\n  %8.4f %8.4f\n  %8.4f %8.4f\n  %8.4f %8.4f\n",
 			xmin, xmax + 3 * cellSize, ymin, ymax + 3 * cellSize, -0.1, 0.1);
 	fprintf(fp,
-			"ITEM: ATOMS ID TYPE X Y Z Vx Vy Vz Mass Vol Lxx Lxy Lyx Lyy SIGxx SIGxy SIGyx SIGyy\n");
+			"ITEM: ATOMS ID TYPE X Y Z Vx Vy Vz Mass Vol Lxx Lxy Lyx Lyy SIGxx SIGxy SIGyx SIGyy VM\n");
 
 	for (int iy = 0; iy < nny; iy++) {
 		for (int ix = 0; ix < nnx; ix++) {
@@ -511,26 +513,30 @@ void dumpGrid() {
 			double xcoord = ix * cellSize + xmin;
 			double ycoord = iy * cellSize + ymin;
 
-			fprintf(fp,
-					"%d %d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",
+			fprintf(fp,	"%d %d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",
 					n_index + 1, 1, xcoord, ycoord, 0.0,
 					gridnodes[n_index].v(0), gridnodes[n_index].v(1), 0.0,
-					gridnodes[n_index].m, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-					0.0, 0.0);
+					gridnodes[n_index].m, 0.0,
+					0.0, 0.0, 0.0, 0.0,
+					0.0, 0.0, 0.0, 0.0,
+					0.0);
 		}
 
 	}
 
 	for (int i = 0; i < Np; i++) {
 
-		fprintf(fp, "%d %d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",
+		double stressVM = sqrt(3.0/2.0) * Deviator(particles[i].SIG).norm();
+
+		fprintf(fp, "%d %d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",
 				i + 10000, 2, particles[i].x(0), particles[i].x(1),
 				1.0 * p_spacing, particles[i].v(0), particles[i].v(1), 0.0,
-				particles[i].m, particles[i].V, particles[i].L(0, 0),
-				particles[i].L(0, 1), particles[i].L(1, 0),
-				particles[i].L(1, 1), particles[i].SIG(0, 0),
-				particles[i].SIG(0, 1), particles[i].SIG(1, 0),
-				particles[i].SIG(1, 1));
+				particles[i].m, particles[i].V,
+				particles[i].L(0, 0), particles[i].L(0, 1),
+				particles[i].L(1, 0), particles[i].L(1, 1),
+				particles[i].SIG(0, 0),	particles[i].SIG(0, 1),
+				particles[i].SIG(1, 0),	particles[i].SIG(1, 1),
+				stressVM);
 	}
 	fclose(fp);
 
@@ -600,19 +606,16 @@ void dirichletBC() {
 
 void computeEnergy() {
 
-	double KE, PE, TE;
+	double KE = 0;
+	double PE = 0;
+	double TE = 0;
 
 	for (int p_index = 0; p_index < Np; p_index++) {
 
 		KE += particles[p_index].m
 				* particles[p_index].v.dot(particles[p_index].v);
 
-		for (int j = 0; j < 2; j++) {
-			for (int i = 0; i < 2; i++) {
-				PE += particles[p_index].EPS(i, j)
-						* particles[p_index].SIG(i, j);
-			}
-		}
+		PE += particles[p_index].EPS.cwiseProduct(particles[p_index].SIG).sum();
 
 	}
 
@@ -647,7 +650,7 @@ int main() {
 	int dump = 0;
 
 	// loop over timesteps
-	for (nTimeStep = 0; nTimeStep < 8000; nTimeStep++) {
+	for (nTimeStep = 0; nTimeStep < 35001; nTimeStep++) {
 
 		//printf("Time Step: %d\n", nTimeStep);
 
