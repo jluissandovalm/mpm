@@ -30,8 +30,8 @@ struct Gridnode {
 };
 
 struct Particle {
-	double   m, V;             // particle mass
-	Vector2d x, v, a;          // particle position and velocities
+	double   m, V, V0;             // particle mass
+	Vector2d x, v, vgrid, agrid;          // particle position and velocities
 	Vector2d v_ipol, acc_ipol; // interpolated (from grid) new velocities and accelerations
 	Matrix2d L;
 	Matrix2d F;// velocity gradient tensor
@@ -41,11 +41,13 @@ struct Particle {
 	Particle() { // initialize particle data to some default values
 		m = 0.0;
 		V = 0.0;
+		V0 = 0.0;
 		x.setZero();
 		v.setZero();
-		a.setZero();
+		vgrid.setZero();
+		agrid.setZero();
 		L.setZero();
-		F.setZero();
+		F.setIdentity();
 		EPS.setZero();
 		SIG.setZero();
 	}
@@ -72,5 +74,6 @@ void   matProperties();
 void   dirichletBC();
 double weightFunction(double);
 double derivativeWeightF(double);
+Matrix2d Deviator(const Matrix2d M);
 
 #endif /* SIMPLEMPM_H_ */
