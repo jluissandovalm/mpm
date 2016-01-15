@@ -16,13 +16,14 @@ using namespace Eigen;
 struct Gridnode {
 
 	double   m;                   // mass at grid node
-	Vector2d q, v, a, fInt, fExt; // momentum, velocity, acceleration, forces.
+	Vector2d q, v, dv, a, fInt, fExt; // momentum, velocity, acceleration, forces.
 
 	Gridnode() { // default initialization
 
 		m = 0.0;
 		q.setZero();
 		v.setZero();
+		dv.setZero();
 		a.setZero();
 		fInt.setZero();
 		fExt.setZero();
@@ -30,8 +31,9 @@ struct Gridnode {
 };
 
 struct Particle {
+	int      typ;
 	double   m, V0, V;             // particle mass
-	Vector2d x, v, vgrid, agrid;          // particle position and velocities
+	Vector2d agrid, dvgrid, vgrid, v, x ;          // particle position and velocities
 	Vector2d v_ipol, acc_ipol; // interpolated (from grid) new velocities and accelerations
 	Matrix2d L;
 	Matrix2d F;// velocity gradient tensor
@@ -39,18 +41,37 @@ struct Particle {
 	Matrix2d SIG;              // stress tensor
 
 	Particle() { // initialize particle data to some default values
-		m  = 0.0;
-		V0 = 0.0;
-		V  = 0.0;
+		typ = 0;
+		m   = 0.0;
+		V0  = 0.0;
+		V   = 0.0;
 		x.setZero();
 		v.setZero();
 		vgrid.setZero();
+		dvgrid.setZero();
 		agrid.setZero();
 		L.setZero();
 		F.setIdentity();
 		EPS.setZero();
 		SIG.setZero();
 	}
+};
+
+struct IsoMat {
+
+	double rho, K, G, nu, cp, k;
+
+	IsoMat() {
+
+		rho = 1.0;
+		K   = 1.0;
+		G   = 1.0;
+		nu  = 1.0;
+		cp  = 1.0;
+		k   = 1.0;
+
+	}
+
 };
 
 int npx;
@@ -64,11 +85,11 @@ int Nn;  // total number of cells
 int nTimeStep;
 double p_spacing, cellSize, icellSize, dt; // discretization parameters
 double xmin, xmax, ymin, ymax;
-double rho, K, G;
 Vector2d gravity;
 
 Particle *particles;
 Gridnode *gridnodes;
+IsoMat   *materials;
 
 void   matProperties();
 void   dirichletBC();
