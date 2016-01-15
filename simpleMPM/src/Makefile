@@ -1,4 +1,4 @@
-all:
+run:
 	clang++-3.5 -O3  -I /home/murillo/git/simpleMPM/simpleMPM/src/eigen simpleMPM.cpp   -o MPMrun
 
 debug:

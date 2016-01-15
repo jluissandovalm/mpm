@@ -168,7 +168,7 @@ void particlesToGrid() {
 	 */
 	int n_ref, n_index, ix, iy;
 	int ref_ix, ref_iy;
-	double dx, dy, wfx, wfy, wf;
+	double dx, dy, wfx, wfy, wf, p_mass;
 
 	for (int p_index = 0; p_index < Np; p_index++) {  // Loop over all particles
 
@@ -215,8 +215,9 @@ void particlesToGrid() {
 				wf = wfx * wfy; // total weight function (kernel) dyadic product
 
 				// interpolate particle values to node
-				gridnodes[n_index].m += wf * particles[p_index].m;
-				gridnodes[n_index].q += wf * particles[p_index].m * particles[p_index].v;
+				p_mass = wf * particles[p_index].m;
+				gridnodes[n_index].m += p_mass;
+				gridnodes[n_index].q += p_mass * particles[p_index].v;
 
 			} // end loop over y dimension on grid
 		} // end loop over x dimension on grid
